@@ -3,325 +3,219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D 梦幻照片宇宙 - 沉浸体验</title>
+    <title>幻影围攻 - 我嫩爹</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { margin: 0; overflow: hidden; background-color: #020205; font-family: 'PingFang SC', sans-serif; }
-        #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
-        
-        .glass-overlay {
-            position: fixed; z-index: 10; pointer-events: none;
-            inset: 0; display: flex; flex-direction: column; justify-content: space-between;
-            padding: 16px; box-sizing: border-box;
-        }
-        .interactive { pointer-events: auto; }
-
-        .panel {
-            background: rgba(10, 10, 20, 0.6); backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px;
-            padding: 16px; color: white; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+        body {
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle at center, #1a0b2e 0%, #050208 100%);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 1200px;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            touch-action: none;
         }
 
-        .mode-btn {
-            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
-            padding: 8px; border-radius: 12px; font-size: 10px; transition: all 0.3s;
-            text-align: center; flex: 1; color: #888;
-        }
-        .mode-btn.active {
-            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-            color: white; border-color: transparent; box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+        #scene {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out;
         }
 
-        #loading-screen {
-            position: fixed; inset: 0; background: #020205; z-index: 100;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            color: white; transition: opacity 0.8s;
+        .center-text {
+            position: absolute;
+            font-size: 5rem;
+            font-weight: 900;
+            color: #fff;
+            text-transform: uppercase;
+            text-shadow: 
+                0 0 10px #ff00ea,
+                0 0 20px #ff00ea,
+                0 0 40px #ff00ea;
+            z-index: 10;
+            pointer-events: none;
+            user-select: none;
+            transform: translateZ(50px);
+            white-space: nowrap;
         }
-        .loader-spinner {
-            width: 48px; height: 48px; border: 3px solid rgba(255,255,255,0.1);
-            border-top-color: #818cf8; border-radius: 50%; animation: spin 1s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-            margin-bottom: 24px;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
 
-        #toast {
-            position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%);
-            background: rgba(99, 102, 241, 0.95); color: white; padding: 10px 24px;
-            border-radius: 30px; font-size: 12px; opacity: 0; transition: 0.3s; z-index: 100;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3); font-weight: bold;
+        @media (max-width: 768px) {
+            .center-text { font-size: 3rem; }
+        }
+
+        /* 环绕元素容器 */
+        .troll-item {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            backface-visibility: visible;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .troll-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 0 5px rgba(168, 85, 247, 0.5));
+        }
+
+        /* 备用 Emoji 样式 */
+        .fallback-emoji {
+            font-size: 50px;
+            filter: drop-shadow(0 0 10px #a855f7);
+            display: none; /* 默认隐藏 */
+        }
+
+        .ring {
+            position: absolute;
+            transform-style: preserve-3d;
+            animation: rotate-ring 15s linear infinite;
+        }
+
+        .ring-reverse {
+            animation: rotate-ring-reverse 20s linear infinite;
+        }
+
+        @keyframes rotate-ring {
+            from { transform: rotateY(0deg); }
+            to { transform: rotateY(360deg); }
+        }
+
+        @keyframes rotate-ring-reverse {
+            from { transform: rotateY(360deg) rotateX(20deg); }
+            to { transform: rotateY(0deg) rotateX(20deg); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-15px) scale(1.1); }
+        }
+
+        .bg-particles {
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(circle, #a855f7 1px, transparent 1px);
+            background-size: 50px 50px;
+            opacity: 0.1;
+            z-index: -1;
         }
     </style>
 </head>
 <body>
 
-    <div id="loading-screen">
-        <div class="loader-spinner"></div>
-        <div class="text-xs tracking-widest text-indigo-300 font-bold">载入 3D 渲染核心...</div>
+    <div class="bg-particles"></div>
+
+    <div id="scene">
+        <div class="center-text">我嫩爹</div>
+        <div id="ring-1" class="ring"></div>
+        <div id="ring-2" class="ring ring-reverse"></div>
     </div>
-
-    <div id="toast"></div>
-
-    <div class="glass-overlay">
-        <!-- 顶部控制 -->
-        <div class="flex justify-center items-start">
-            <div class="panel interactive w-full max-w-sm">
-                <div class="flex items-center justify-between mb-3">
-                    <h1 class="text-lg font-black bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-purple-400">PHOTO UNIVERSE</h1>
-                    <button onclick="clearAllPhotos()" class="text-[9px] text-red-400 bg-red-400/10 px-2 py-1 rounded">清空照片</button>
-                </div>
-                
-                <div class="flex gap-2">
-                    <button onclick="transform('sphere')" id="btn-sphere" class="mode-btn">球体</button>
-                    <button onclick="transform('helix')" id="btn-helix" class="mode-btn">螺旋</button>
-                    <button onclick="transform('tunnel')" id="btn-tunnel" class="mode-btn">隧道</button>
-                    <button onclick="transform('cloud')" id="btn-cloud" class="mode-btn">散点</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- 底部上传 -->
-        <div class="flex flex-col gap-4">
-            <div class="panel interactive w-full">
-                <div class="flex items-center justify-between gap-4">
-                    <div class="flex flex-col">
-                        <span class="text-xs font-bold text-indigo-300 mb-1">专属定制宇宙</span>
-                        <span class="text-[9px] text-gray-500">上传将替换现有照片</span>
-                    </div>
-                    <label class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition-all text-white text-[11px] font-bold px-5 py-3 rounded-2xl cursor-pointer shadow-lg whitespace-nowrap">
-                        替换并上传照片
-                        <input type="file" id="imageUpload" multiple accept="image/*" class="hidden" />
-                    </label>
-                </div>
-            </div>
-            <div class="text-center text-[8px] text-gray-700 tracking-[0.5em] uppercase">Touch to rotate • Double touch to zoom</div>
-        </div>
-    </div>
-
-    <div id="canvas-container"></div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
 
     <script>
-        let scene, camera, renderer, starField;
-        let photoMeshes = [];
-        let currentMode = 'sphere';
-        let isTransitioning = false;
-        let initialLoading = true;
+        const ring1 = document.getElementById('ring-1');
+        const ring2 = document.getElementById('ring-2');
+        const scene = document.getElementById('scene');
+        
+        // 这里的路径由于环境限制可能无法直接加载本地文件
+        const imgSrc = 'image_38cb1c.png'; 
 
-        const container = document.getElementById('canvas-container');
+        function createItem(angle, radius, ringContainer, isOuter = false) {
+            const container = document.createElement('div');
+            container.className = 'troll-item';
+            
+            const img = document.createElement('img');
+            img.src = imgSrc;
+            img.className = 'troll-image';
+            
+            // 备用 Emoji
+            const emoji = document.createElement('div');
+            emoji.className = 'fallback-emoji';
+            emoji.innerText = '😈'; // 搞怪表情作为备选
 
-        const init = () => {
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 5000);
-            camera.position.z = 1000;
+            // 容错处理：图片加载失败时显示 Emoji
+            img.onerror = function() {
+                img.style.display = 'none';
+                emoji.style.display = 'block';
+            };
 
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            container.appendChild(renderer.domElement);
+            container.appendChild(img);
+            container.appendChild(emoji);
+            
+            const x = Math.cos(angle) * radius;
+            const z = Math.sin(angle) * radius;
+            const rotY = (angle * 180 / Math.PI);
 
-            // 星空背景
-            const starGeo = new THREE.BufferGeometry();
-            const starPos = [];
-            for(let i=0; i<4000; i++){
-                starPos.push((Math.random()-0.5)*4000, (Math.random()-0.5)*4000, (Math.random()-0.5)*4000);
-            }
-            starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
-            const starMat = new THREE.PointsMaterial({ color: 0x818cf8, size: 1.5, transparent: true, opacity: 0.4 });
-            starField = new THREE.Points(starGeo, starMat);
-            scene.add(starField);
+            container.style.transform = `translateX(${x}px) translateZ(${z}px) rotateY(${-rotY}deg) ${isOuter ? 'rotateX(10deg)' : ''}`;
+            container.style.animationDelay = `${Math.random() * 2}s`;
+            
+            ringContainer.appendChild(container);
+        }
 
-            // 初始添加 25 张占位图
-            for(let i=0; i<25; i++) {
-                addPhotoMesh(`https://picsum.photos/400/500?random=${i}`, true);
-            }
-
-            // 自动布局
-            setTimeout(() => {
-                transform('sphere');
-                document.getElementById('loading-screen').style.opacity = '0';
-                setTimeout(() => document.getElementById('loading-screen').remove(), 1000);
-                initialLoading = false;
-            }, 800);
-
-            // 事件
-            window.addEventListener('resize', onWindowResize);
-            document.addEventListener('touchstart', onTouchStart, { passive: false });
-            document.addEventListener('touchmove', onTouchMove, { passive: false });
-            document.getElementById('imageUpload').addEventListener('change', handleUpload);
-
-            animate();
-        };
-
-        const addPhotoMesh = (url, isInitial = false) => {
-            const loader = new THREE.TextureLoader();
-            loader.load(url, (texture) => {
-                const geometry = new THREE.PlaneGeometry(120, 150);
-                const material = new THREE.MeshBasicMaterial({ 
-                    map: texture, 
-                    side: THREE.DoubleSide,
-                    transparent: true,
-                    opacity: 0
-                });
-                const mesh = new THREE.Mesh(geometry, material);
-                
-                // 初始随机化
-                mesh.position.set((Math.random()-0.5)*1000, (Math.random()-0.5)*1000, (Math.random()-0.5)*1000);
-                mesh.userData = { 
-                    phase: Math.random() * Math.PI * 2,
-                    isPlaceholder: isInitial 
-                };
-                
-                scene.add(mesh);
-                photoMeshes.push(mesh);
-                
-                new TWEEN.Tween(material).to({ opacity: 1 }, 1000).start();
-                
-                // 只有在非初始加载时才触发重排
-                if(!initialLoading) {
-                    transform(currentMode, 1500);
-                }
-            });
-        };
-
-        // 清空照片函数
-        const clearAllPhotos = (callback) => {
-            if(photoMeshes.length === 0) {
-                if(callback) callback();
-                return;
+        function createRings() {
+            // 内环 12 个元素
+            const count1 = 12;
+            const radius1 = 200;
+            for (let i = 0; i < count1; i++) {
+                createItem((i / count1) * Math.PI * 2, radius1, ring1);
             }
 
-            let completed = 0;
-            const targetCount = photoMeshes.length;
-
-            photoMeshes.forEach((mesh) => {
-                // 渐隐并向远处飞去
-                new TWEEN.Tween(mesh.position)
-                    .to({ x: (Math.random()-0.5)*2000, y: (Math.random()-0.5)*2000, z: -2000 }, 800)
-                    .easing(TWEEN.Easing.Back.In)
-                    .start();
-                
-                new TWEEN.Tween(mesh.material)
-                    .to({ opacity: 0 }, 700)
-                    .onComplete(() => {
-                        scene.remove(mesh);
-                        mesh.geometry.dispose();
-                        mesh.material.dispose();
-                        completed++;
-                        if(completed === targetCount) {
-                            photoMeshes = [];
-                            if(callback) callback();
-                        }
-                    })
-                    .start();
-            });
-        };
-
-        const transform = (mode, duration = 2000) => {
-            currentMode = mode;
-            isTransitioning = true;
-            
-            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-            const activeBtn = document.getElementById('btn-' + mode);
-            if(activeBtn) activeBtn.classList.add('active');
-
-            const count = photoMeshes.length;
-            
-            photoMeshes.forEach((mesh, i) => {
-                let targetPos = new THREE.Vector3();
-                let targetRot = new THREE.Euler(0, 0, 0);
-
-                if (mode === 'sphere') {
-                    const phi = Math.acos(-1 + (2 * i) / count);
-                    const theta = Math.sqrt(count * Math.PI) * phi;
-                    targetPos.setFromSphericalCoords(480, phi, theta);
-                    mesh.lookAt(0,0,0);
-                    targetRot.copy(mesh.rotation);
-                } 
-                else if (mode === 'helix') {
-                    const angle = i * 0.4 + Math.PI;
-                    targetPos.set(Math.cos(angle) * 380, (i - count/2) * 45, Math.sin(angle) * 380);
-                    mesh.lookAt(0, targetPos.y, 0);
-                    targetRot.copy(mesh.rotation);
-                } 
-                else if (mode === 'tunnel') {
-                    targetPos.set((Math.random()-0.5)*300, (Math.random()-0.5)*300, i * -200 + 500);
-                    targetRot.set(0, 0, Math.random() * 0.4);
-                }
-                else if (mode === 'cloud') {
-                    targetPos.set((Math.random()-0.5)*1300, (Math.random()-0.5)*1300, (Math.random()-0.5)*1000);
-                    targetRot.set(Math.random()*0.5, Math.random()*0.5, 0);
-                }
-
-                new TWEEN.Tween(mesh.position).to({ x: targetPos.x, y: targetPos.y, z: targetPos.z }, duration)
-                    .easing(TWEEN.Easing.Exponential.InOut).start();
-                new TWEEN.Tween(mesh.rotation).to({ x: targetRot.x, y: targetRot.y, z: targetRot.z }, duration)
-                    .easing(TWEEN.Easing.Exponential.InOut).onComplete(() => isTransitioning = false).start();
-            });
-        };
-
-        function handleUpload(e) {
-            const files = Array.from(e.target.files);
-            if(!files.length) return;
-
-            showToast(`正在清理并重塑 3D 宇宙...`);
-            
-            // 先清理所有现有照片，完成后再添加新照片
-            clearAllPhotos(() => {
-                files.forEach(file => {
-                    const url = URL.createObjectURL(file);
-                    addPhotoMesh(url, false);
-                });
-                showToast(`成功同步 ${files.length} 张个人照片！`);
-            });
+            // 外环 18 个元素
+            const count2 = 18;
+            const radius2 = 350;
+            for (let i = 0; i < count2; i++) {
+                createItem((i / count2) * Math.PI * 2, radius2, ring2, true);
+            }
         }
 
-        let lastX, lastY;
-        function onTouchStart(e) { lastX = e.touches[0].clientX; lastY = e.touches[0].clientY; }
-        function onTouchMove(e) {
-            e.preventDefault();
-            const dx = e.touches[0].clientX - lastX;
-            const dy = e.touches[0].clientY - lastY;
-            scene.rotation.y += dx * 0.003;
-            scene.rotation.x += dy * 0.003;
-            lastX = e.touches[0].clientX; lastY = e.touches[0].clientY;
-        }
+        let targetX = 0;
+        let targetY = 0;
+        let currentX = 0;
+        let currentY = 0;
 
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
-
-        function showToast(m) {
-            const t = document.getElementById('toast');
-            t.innerText = m; t.style.opacity = 1;
-            setTimeout(() => t.style.opacity = 0, 3000);
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            TWEEN.update();
+        function handleMove(e) {
+            let x, y;
+            if (e.touches && e.touches.length > 0) {
+                x = e.touches[0].clientX;
+                y = e.touches[0].clientY;
+            } else {
+                x = e.clientX;
+                y = e.clientY;
+            }
             
-            const time = performance.now() * 0.001;
-            
-            photoMeshes.forEach(mesh => {
-                // 仅在散点模式增加额外的浮动感
-                if(currentMode === 'cloud') {
-                    mesh.position.y += Math.sin(time + mesh.userData.phase) * 0.3;
-                }
-                if(currentMode === 'tunnel') {
-                    mesh.position.z += 3; 
-                    if(mesh.position.z > 800) mesh.position.z = -3000;
-                }
-            });
-
-            starField.rotation.y += 0.0004;
-            renderer.render(scene, camera);
+            if (x !== undefined && y !== undefined) {
+                targetX = (x / window.innerWidth - 0.5) * 40;
+                targetY = (y / window.innerHeight - 0.5) * -40;
+            }
         }
 
-        init();
+        function update() {
+            currentX += (targetX - currentX) * 0.1;
+            currentY += (targetY - currentY) * 0.1;
+            scene.style.transform = `rotateY(${currentX}deg) rotateX(${currentY}deg)`;
+            requestAnimationFrame(update);
+        }
+
+        document.addEventListener('mousemove', handleMove);
+        document.addEventListener('touchmove', (e) => {
+            if (e.cancelable) e.preventDefault();
+            handleMove(e);
+        }, { passive: false });
+
+        createRings();
+        update();
     </script>
 </body>
 </html>
