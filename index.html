@@ -3,23 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>幻影围攻 - 我嫩爹</title>
+    <title>幻影围攻 - 赛博至尊版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        :root {
+            --neon-pink: #ff00ea;
+            --neon-blue: #00f2ff;
+            --neon-purple: #a855f7;
+        }
+
         body {
             margin: 0;
             padding: 0;
-            background: radial-gradient(circle at center, #1a0b2e 0%, #050208 100%);
+            background: #05020a;
             height: 100vh;
             overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
-            perspective: 1200px;
+            perspective: 2000px;
             font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
             touch-action: none;
         }
 
+        /* 3D 场景容器 */
         #scene {
             position: relative;
             width: 100%;
@@ -28,183 +35,282 @@
             align-items: center;
             justify-content: center;
             transform-style: preserve-3d;
-            transition: transform 0.1s ease-out;
+            transition: transform 0.2s ease-out;
+            pointer-events: none;
         }
 
-        .center-text {
+        /* 霓虹地平线网格 */
+        .grid-floor {
             position: absolute;
-            font-size: 5rem;
+            width: 400%;
+            height: 400%;
+            background-image: 
+                linear-gradient(to right, rgba(168, 85, 247, 0.2) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(168, 85, 247, 0.2) 1px, transparent 1px);
+            background-size: 80px 80px;
+            transform: rotateX(85deg) translateY(-20%);
+            top: 20%;
+            z-index: -1;
+            animation: grid-move 4s linear infinite;
+        }
+
+        @keyframes grid-move {
+            from { background-position: 0 0; }
+            to { background-position: 0 80px; }
+        }
+
+        /* 极致故障文字 */
+        .glitch-wrapper {
+            position: absolute;
+            transform: translateZ(200px);
+            z-index: 100;
+        }
+
+        .glitch-text {
+            font-size: 7rem;
             font-weight: 900;
             color: #fff;
-            text-transform: uppercase;
-            text-shadow: 
-                0 0 10px #ff00ea,
-                0 0 20px #ff00ea,
-                0 0 40px #ff00ea;
-            z-index: 10;
-            pointer-events: none;
-            user-select: none;
-            transform: translateZ(50px);
-            white-space: nowrap;
+            position: relative;
+            text-shadow: 0 0 20px var(--neon-pink);
+            animation: shake 0.5s infinite alternate;
+        }
+
+        .glitch-text::before, .glitch-text::after {
+            content: "我嫩爹";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0.8;
+        }
+
+        .glitch-text::before {
+            color: var(--neon-blue);
+            z-index: -1;
+            animation: glitch-move 0.3s infinite;
+        }
+
+        .glitch-text::after {
+            color: var(--neon-pink);
+            z-index: -2;
+            animation: glitch-move 0.3s infinite reverse;
+        }
+
+        @keyframes shake {
+            0% { transform: skewX(-5deg); }
+            100% { transform: skewX(5deg); }
+        }
+
+        @keyframes glitch-move {
+            0% { transform: translate(-5px, 3px); }
+            50% { transform: translate(5px, -3px); }
+            100% { transform: translate(-2px, 2px); }
         }
 
         @media (max-width: 768px) {
-            .center-text { font-size: 3rem; }
+            .glitch-text { font-size: 3.5rem; }
         }
 
-        /* 环绕元素容器 */
+        /* 图片元素 */
         .troll-item {
             position: absolute;
-            width: 80px;
-            height: 80px;
+            width: 90px;
+            height: 90px;
             display: flex;
             align-items: center;
             justify-content: center;
-            pointer-events: none;
-            backface-visibility: visible;
-            animation: float 3s ease-in-out infinite;
+            transform-style: preserve-3d;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .troll-image {
             width: 100%;
             height: 100%;
             object-fit: contain;
-            filter: drop-shadow(0 0 5px rgba(168, 85, 247, 0.5));
+            filter: drop-shadow(0 0 15px var(--neon-purple));
+            animation: pulse 2s ease-in-out infinite;
         }
 
-        /* 备用 Emoji 样式 */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 15px var(--neon-purple)); }
+            50% { transform: scale(1.15); filter: drop-shadow(0 0 25px var(--neon-pink)); }
+        }
+
         .fallback-emoji {
-            font-size: 50px;
-            filter: drop-shadow(0 0 10px #a855f7);
-            display: none; /* 默认隐藏 */
+            font-size: 55px;
+            filter: drop-shadow(0 0 20px var(--neon-pink));
+            display: none;
         }
 
+        /* 轨道 */
         .ring {
             position: absolute;
             transform-style: preserve-3d;
-            animation: rotate-ring 15s linear infinite;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .ring-reverse {
-            animation: rotate-ring-reverse 20s linear infinite;
-        }
+        .ring-1 { animation: rotate-y 8s linear infinite; }
+        .ring-2 { animation: rotate-y-rev 15s linear infinite; }
+        .ring-3 { animation: rotate-y-tilt 25s linear infinite; }
 
-        @keyframes rotate-ring {
+        @keyframes rotate-y {
             from { transform: rotateY(0deg); }
             to { transform: rotateY(360deg); }
         }
 
-        @keyframes rotate-ring-reverse {
+        @keyframes rotate-y-rev {
             from { transform: rotateY(360deg) rotateX(20deg); }
             to { transform: rotateY(0deg) rotateX(20deg); }
         }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0) scale(1); }
-            50% { transform: translateY(-15px) scale(1.1); }
+        @keyframes rotate-y-tilt {
+            from { transform: rotateY(0deg) rotateX(-20deg) rotateZ(15deg); }
+            to { transform: rotateY(360deg) rotateX(-20deg) rotateZ(15deg); }
         }
 
-        .bg-particles {
-            position: absolute;
+        /* 背景装饰 */
+        .scanlines {
+            position: fixed;
             inset: 0;
-            background-image: radial-gradient(circle, #a855f7 1px, transparent 1px);
-            background-size: 50px 50px;
-            opacity: 0.1;
-            z-index: -1;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%);
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 200;
+        }
+
+        .hyper-speed {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle, transparent 20%, #000 100%);
+            z-index: -2;
+        }
+
+        /* 爆发动画类 */
+        .burst {
+            transform: scale(2) translateZ(500px) !important;
+            opacity: 0.5;
         }
     </style>
 </head>
-<body>
+<body onclick="doBurst()">
 
-    <div class="bg-particles"></div>
+    <div class="scanlines"></div>
+    <div class="hyper-speed"></div>
+    <div class="grid-floor"></div>
 
     <div id="scene">
-        <div class="center-text">我嫩爹</div>
-        <div id="ring-1" class="ring"></div>
-        <div id="ring-2" class="ring ring-reverse"></div>
+        <div class="glitch-wrapper">
+            <div class="glitch-text">我嫩爹</div>
+        </div>
+        <div id="ring-1" class="ring ring-1"></div>
+        <div id="ring-2" class="ring ring-2"></div>
+        <div id="ring-3" class="ring ring-3"></div>
     </div>
 
     <script>
-        const ring1 = document.getElementById('ring-1');
-        const ring2 = document.getElementById('ring-2');
-        const scene = document.getElementById('scene');
+        const ringElements = [
+            document.getElementById('ring-1'),
+            document.getElementById('ring-2'),
+            document.getElementById('ring-3')
+        ];
         
-        // 这里的路径由于环境限制可能无法直接加载本地文件
         const imgSrc = 'image_38cb1c.png'; 
+        let items = [];
 
-        function createItem(angle, radius, ringContainer, isOuter = false) {
-            const container = document.createElement('div');
-            container.className = 'troll-item';
+        function createItem(angle, radius, container, tilt = 0) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'troll-item';
             
             const img = document.createElement('img');
             img.src = imgSrc;
             img.className = 'troll-image';
             
-            // 备用 Emoji
             const emoji = document.createElement('div');
             emoji.className = 'fallback-emoji';
-            emoji.innerText = '😈'; // 搞怪表情作为备选
+            emoji.innerText = '🤡';
 
-            // 容错处理：图片加载失败时显示 Emoji
-            img.onerror = function() {
+            img.onerror = () => {
                 img.style.display = 'none';
                 emoji.style.display = 'block';
             };
 
-            container.appendChild(img);
-            container.appendChild(emoji);
+            wrapper.appendChild(img);
+            wrapper.appendChild(emoji);
             
             const x = Math.cos(angle) * radius;
             const z = Math.sin(angle) * radius;
             const rotY = (angle * 180 / Math.PI);
 
-            container.style.transform = `translateX(${x}px) translateZ(${z}px) rotateY(${-rotY}deg) ${isOuter ? 'rotateX(10deg)' : ''}`;
-            container.style.animationDelay = `${Math.random() * 2}s`;
+            const baseTransform = `translateX(${x}px) translateZ(${z}px) rotateY(${-rotY}deg) rotateX(${tilt}deg)`;
+            wrapper.style.transform = baseTransform;
+            wrapper.dataset.baseTransform = baseTransform;
             
-            ringContainer.appendChild(container);
+            container.appendChild(wrapper);
+            items.push(wrapper);
         }
 
-        function createRings() {
-            // 内环 12 个元素
-            const count1 = 12;
-            const radius1 = 200;
-            for (let i = 0; i < count1; i++) {
-                createItem((i / count1) * Math.PI * 2, radius1, ring1);
+        function buildScene() {
+            // 内轨
+            for (let i = 0; i < 8; i++) {
+                createItem((i / 8) * Math.PI * 2, 220, ringElements[0], 0);
             }
-
-            // 外环 18 个元素
-            const count2 = 18;
-            const radius2 = 350;
-            for (let i = 0; i < count2; i++) {
-                createItem((i / count2) * Math.PI * 2, radius2, ring2, true);
+            // 中轨
+            for (let i = 0; i < 14; i++) {
+                createItem((i / 14) * Math.PI * 2, 400, ringElements[1], 20);
+            }
+            // 外轨
+            for (let i = 0; i < 20; i++) {
+                createItem((i / 20) * Math.PI * 2, 650, ringElements[2], -15);
             }
         }
 
-        let targetX = 0;
-        let targetY = 0;
-        let currentX = 0;
-        let currentY = 0;
+        // 交互逻辑
+        let tX = 0, tY = 0, cX = 0, cY = 0;
 
         function handleMove(e) {
-            let x, y;
-            if (e.touches && e.touches.length > 0) {
-                x = e.touches[0].clientX;
-                y = e.touches[0].clientY;
-            } else {
-                x = e.clientX;
-                y = e.clientY;
-            }
+            const x = e.touches ? e.touches[0].clientX : e.clientX;
+            const y = e.touches ? e.touches[0].clientY : e.clientY;
             
             if (x !== undefined && y !== undefined) {
-                targetX = (x / window.innerWidth - 0.5) * 40;
-                targetY = (y / window.innerHeight - 0.5) * -40;
+                tX = (x / window.innerWidth - 0.5) * 80;
+                tY = (y / window.innerHeight - 0.5) * -80;
             }
         }
 
+        // 爆发冲击波效果
+        function doBurst() {
+            items.forEach(item => {
+                item.classList.add('burst');
+                setTimeout(() => {
+                    item.classList.remove('burst');
+                }, 500);
+            });
+            
+            // 屏幕抖动
+            document.body.style.animation = 'screen-shake 0.2s 3';
+            setTimeout(() => {
+                document.body.style.animation = '';
+            }, 600);
+        }
+
+        const shakeStyle = document.createElement('style');
+        shakeStyle.innerHTML = `
+            @keyframes screen-shake {
+                0% { transform: translate(0,0); }
+                25% { transform: translate(10px, 10px); }
+                50% { transform: translate(-10px, -10px); }
+                75% { transform: translate(10px, -10px); }
+                100% { transform: translate(0,0); }
+            }
+        `;
+        document.head.appendChild(shakeStyle);
+
         function update() {
-            currentX += (targetX - currentX) * 0.1;
-            currentY += (targetY - currentY) * 0.1;
-            scene.style.transform = `rotateY(${currentX}deg) rotateX(${currentY}deg)`;
+            cX += (tX - cX) * 0.1;
+            cY += (tY - cY) * 0.1;
+            document.getElementById('scene').style.transform = `rotateY(${cX}deg) rotateX(${cY}deg)`;
             requestAnimationFrame(update);
         }
 
@@ -214,7 +320,7 @@
             handleMove(e);
         }, { passive: false });
 
-        createRings();
+        buildScene();
         update();
     </script>
 </body>
