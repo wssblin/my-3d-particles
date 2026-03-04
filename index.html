@@ -3,109 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D 交互式浪漫粒子系统 - 沉浸版</title>
+    <title>3D 交互式浪漫粒子系统 - 极致视觉版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; overflow: hidden; background-color: #050505; font-family: 'Montserrat', sans-serif; touch-action: none; }
+        body { margin: 0; overflow: hidden; background-color: #020205; font-family: 'Montserrat', sans-serif; touch-action: none; }
         #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
         
         #ui-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10;
-            display: flex; flex-direction: column; justify-content: space-between; padding: 12px; box-sizing: border-box;
-            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s ease;
+            display: flex; flex-direction: column; justify-content: space-between; padding: 16px; box-sizing: border-box;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        /* 隐藏 UI 时的状态 */
-        .ui-hidden { opacity: 0; pointer-events: none !important; transform: translateY(10px); }
+        .ui-hidden { opacity: 0; pointer-events: none !important; transform: scale(0.98); }
 
         .interactive-element { pointer-events: auto; }
 
         #loader {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             color: white; font-size: 1rem; text-align: center;
-            z-index: 20; background: rgba(0,0,0,0.8); padding: 15px; border-radius: 10px;
-            pointer-events: none; transition: opacity 0.5s;
+            z-index: 20; background: rgba(0,0,0,0.8); padding: 20px; border-radius: 12px;
+            pointer-events: none; transition: opacity 0.5s; border: 1px solid rgba(255,255,255,0.1);
         }
 
         #toast {
             position: absolute; bottom: 100px; left: 50%; transform: translateX(-50%);
-            background: rgba(50, 200, 100, 0.9); color: white; padding: 8px 20px;
-            border-radius: 25px; font-size: 0.85rem; opacity: 0; pointer-events: none;
-            transition: opacity 0.3s; z-index: 30; box-shadow: 0 4px 15px rgba(0,0,0,0.4); font-weight: 500;
+            background: rgba(255, 100, 150, 0.9); color: white; padding: 10px 24px;
+            border-radius: 30px; font-size: 0.9rem; opacity: 0; pointer-events: none;
+            transition: opacity 0.3s; z-index: 30; box-shadow: 0 4px 20px rgba(255, 100, 150, 0.4);
         }
 
         .glass-panel {
-            background: rgba(20, 20, 20, 0.6); backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px;
-            padding: 12px; color: white;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-            max-width: 90vw;
+            background: rgba(15, 15, 25, 0.7); backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 18px;
+            padding: 16px; color: white; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
         }
         
-        .scroll-area { overflow-y: auto; -webkit-overflow-scrolling: touch; }
-        #input_video { display: none; }
-        
-        /* 适配手机端的浮动显隐按钮 */
         #ui-toggle-hint {
-            position: absolute; bottom: 20px; right: 20px; z-index: 5;
-            background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4);
-            padding: 5px 10px; border-radius: 20px; font-size: 10px;
-            pointer-events: none; border: 1px solid rgba(255,255,255,0.05);
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 5;
+            color: rgba(255,255,255,0.3); font-size: 11px; pointer-events: none;
+            letter-spacing: 2px; text-transform: uppercase;
         }
 
-        ::-webkit-scrollbar { width: 3px; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+        .shape-btn {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05);
+            aspect-ratio: 1; border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; transition: all 0.3s;
+        }
+        .shape-btn:active { background: rgba(255,255,255,0.2); transform: scale(0.9); }
     </style>
 </head>
 <body>
 
-    <div id="loader">正在构建高精模型...</div>
+    <div id="loader">✨ 正在召唤魔法粒子...</div>
     <div id="toast"></div>
     <video id="input_video"></video>
-    <div id="ui-toggle-hint">点击空白处切换 UI 显隐</div>
+    <div id="ui-toggle-hint" class="opacity-0">点击屏幕切换界面</div>
 
     <div id="ui-layer">
-        <!-- 顶部控制栏 -->
+        <!-- 顶部 -->
         <div class="flex justify-between items-start w-full">
-            <div class="glass-panel interactive-element w-full sm:w-72">
-                <div class="flex justify-between items-center mb-2">
-                    <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-400 to-purple-400">粒子幻境</h1>
-                    <button onclick="toggleCleanMode()" class="text-[10px] bg-white/10 px-2 py-1 rounded">隐藏界面</button>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-2 mb-3">
-                    <div class="flex items-center gap-2 bg-white/5 p-2 rounded-lg border border-white/5">
-                        <input type="color" id="colorPicker" value="#ffffff" class="w-5 h-5 rounded-full cursor-pointer bg-transparent border-none">
-                        <span class="text-[10px] text-gray-400">氛围色</span>
+            <div class="glass-panel interactive-element w-full sm:w-80">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-300">幻想粒子 v2.0</h1>
+                        <p class="text-[10px] text-gray-400">视觉增强 · 呼吸感 · 极致体验</p>
                     </div>
-                    <button onclick="takeSnapshot()" class="bg-amber-600/30 border border-amber-500/30 py-1.5 rounded-lg text-[10px]">📸 保存截图</button>
+                    <button onclick="toggleCleanMode()" class="bg-white/10 hover:bg-white/20 p-2 rounded-full">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/></svg>
+                    </button>
                 </div>
                 
-                <div class="text-[10px] text-gray-400 font-bold mb-1 pb-1 border-b border-white/10 uppercase tracking-wider">选择形态:</div>
-                <div class="scroll-area max-h-48 grid grid-cols-3 gap-1.5" id="shape-list"></div>
-            </div>
-
-            <div class="interactive-element ml-2">
-                <button onclick="toggleFullScreen()" class="glass-panel p-2 hover:bg-white/20 h-10 w-10 flex items-center justify-center rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg>
-                </button>
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <div class="bg-white/5 p-2 rounded-xl border border-white/5 flex items-center justify-between">
+                        <span class="text-[10px] text-gray-400">主色调</span>
+                        <input type="color" id="colorPicker" value="#ff88cc" class="w-6 h-6 rounded-md cursor-pointer bg-transparent border-none">
+                    </div>
+                    <button onclick="takeSnapshot()" class="bg-gradient-to-br from-indigo-600/40 to-purple-600/40 border border-white/10 py-2 rounded-xl text-[10px] font-bold">📸 捕捉瞬间</button>
+                </div>
+                
+                <div class="text-[9px] text-gray-500 font-bold mb-2 uppercase tracking-widest">魔法形态转换</div>
+                <div class="grid grid-cols-5 gap-2" id="shape-list"></div>
             </div>
         </div>
 
-        <!-- 底部控制栏 -->
-        <div class="flex flex-col sm:flex-row justify-between items-end gap-3">
-            <div class="glass-panel interactive-element w-full sm:w-64">
-                <label class="flex items-center gap-2 text-[10px] font-bold mb-1.5 text-blue-300">
-                    📸 上传照片定制粒子
-                </label>
-                <input type="file" id="imageUpload" multiple accept="image/*" class="text-[10px] w-full text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded-full file:border-0 file:text-[10px] file:bg-blue-600 file:text-white"/>
+        <!-- 底部 -->
+        <div class="flex flex-col gap-4">
+            <div class="flex justify-between items-end gap-3">
+                <div class="glass-panel interactive-element flex-grow sm:max-w-xs">
+                    <div class="flex items-center gap-3">
+                        <div id="hand-indicator" class="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]"></div>
+                        <div class="flex flex-col">
+                            <span id="hand-status" class="text-[10px] font-bold">手势追踪已就绪</span>
+                            <span class="text-[8px] text-gray-500">张开双手释放引力</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="interactive-element flex gap-2">
+                    <button id="audioBtn" onclick="toggleAudio()" class="glass-panel w-12 h-12 flex items-center justify-center rounded-2xl active:scale-90">🎵</button>
+                    <button onclick="toggleFullScreen()" class="glass-panel w-12 h-12 flex items-center justify-center rounded-2xl active:scale-90">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+                    </button>
+                </div>
             </div>
-
-            <div class="flex gap-2 w-full sm:w-auto">
-                <button id="audioBtn" onclick="toggleAudio()" class="glass-panel interactive-element flex-1 sm:flex-none text-[10px] py-2 px-4 border border-emerald-500/30">🎵 律动</button>
-                <div class="glass-panel flex items-center gap-2 px-3 py-2">
-                    <div id="hand-indicator" class="w-2 h-2 rounded-full bg-red-500"></div>
-                    <span id="hand-status" class="text-[10px] font-bold">手势未就绪</span>
+            
+            <div class="glass-panel interactive-element w-full">
+                <div class="flex items-center gap-3">
+                    <span class="text-[10px] text-blue-300 font-bold whitespace-nowrap">上传定制:</span>
+                    <input type="file" id="imageUpload" multiple accept="image/*" class="text-[9px] text-gray-400 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[9px] file:bg-blue-600/30 file:text-blue-200"/>
                 </div>
             </div>
         </div>
@@ -119,72 +125,43 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
 
     <script>
-        // --- 1. 全局状态控制 ---
-        let isCleanMode = false;
-        const uiLayer = document.getElementById('ui-layer');
-
-        // 切换沉浸模式（隐藏 UI）
-        function toggleCleanMode(force) {
-            isCleanMode = force !== undefined ? force : !isCleanMode;
-            if (isCleanMode) {
-                uiLayer.classList.add('ui-hidden');
-                document.getElementById('ui-toggle-hint').style.opacity = "0.6";
-            } else {
-                uiLayer.classList.remove('ui-hidden');
-                document.getElementById('ui-toggle-hint').style.opacity = "0";
-            }
-        }
-
-        // 监听全屏切换，进入全屏时自动开启沉浸模式
-        document.addEventListener('fullscreenchange', () => {
-            if (document.fullscreenElement) {
-                toggleCleanMode(true);
-                showToast("已进入全屏沉浸模式，点击屏幕任意位置显示菜单");
-            } else {
-                toggleCleanMode(false);
-            }
-        });
-
-        // 点击画布容器切换 UI 显隐
-        document.getElementById('canvas-container').addEventListener('click', (e) => {
-            // 如果点击的是空白处（不是 UI 元素），则切换
-            toggleCleanMode();
-        });
-
-        // --- 2. 基础配置 ---
+        // --- 核心配置 ---
+        const isMobile = window.innerWidth < 768;
         const CONFIG = {
-            particleCount: window.innerWidth < 768 ? 6000 : 12000, // 手机端减少粒子数保证流畅度
-            particleSize: window.innerWidth < 768 ? 12.0 : 9.0,   // 手机端粒子稍大点
-            defaultColor: new THREE.Color('#ffffff'),
-            atlasGrid: 4
+            particleCount: isMobile ? 5000 : 12000, // 手机端大幅减少数量，提升流畅度和清晰度
+            particleSize: isMobile ? 22.0 : 15.0,  // 手机端粒子显著调大，增加柔软感
+            atlasGrid: 4,
+            baseColor: "#ff88cc"
         };
 
         const SHAPES_DATA = [
-            { id: 'heart', name: '❤️' }, { id: 'rose', name: '🌹' }, { id: 'star', name: '⭐' },
-            { id: 'moon', name: '🌙' }, { id: 'butterfly', name: '🦋' }, { id: 'ring', name: '💍' },
-            { id: 'snowflake', name: '❄️' }, { id: 'dna', name: '🧬' }, { id: 'galaxy', name: '🌌' },
-            { id: 'tree', name: '🎄' }, { id: 'diamond', name: '💎' }, { id: 'crown', name: '👑' },
-            { id: 'music', name: '🎵' }, { id: 'lips', name: '💋' }, { id: 'fireworks', name: '🎆' }
+            { id: 'heart', name: '❤️' }, { id: 'star', name: '⭐' }, { id: 'rose', name: '🌹' },
+            { id: 'moon', name: '🌙' }, { id: 'butterfly', name: '🦋' }, { id: 'dna', name: '🧬' },
+            { id: 'galaxy', name: '🌌' }, { id: 'diamond', name: '💎' }, { id: 'crown', name: '👑' },
+            { id: 'music', name: '🎵' }
         ];
 
         let scene, camera, renderer, particles, material, geometry, controls, clock = new THREE.Clock();
         let targetPositions = [], handExpansion = 0, targetHandExpansion = 0;
         let audioContext, analyser, dataArray, isAudioActive = false;
-        let textureAtlasCanvas, textureAtlasTexture;
+        let isCleanMode = false;
 
-        // --- 3. 初始化 ---
+        // --- 初始化 ---
         function init() {
             initThree();
             initUI();
             setupMediaPipe();
+            
+            // 延迟显示提示
+            setTimeout(() => document.getElementById('ui-toggle-hint').classList.remove('opacity-0'), 3000);
         }
 
         function initUI() {
             const list = document.getElementById('shape-list');
             SHAPES_DATA.forEach(shape => {
                 const btn = document.createElement('button');
-                btn.className = 'bg-white/5 border border-white/5 p-2 rounded text-sm text-center interactive-element hover:bg-white/20 active:scale-90 transition-all';
-                btn.innerText = shape.name;
+                btn.className = 'shape-btn interactive-element';
+                btn.innerHTML = shape.name;
                 btn.onclick = (e) => { e.stopPropagation(); setShape(shape.id); };
                 list.appendChild(btn);
             });
@@ -193,43 +170,44 @@
         function initThree() {
             const container = document.getElementById('canvas-container');
             scene = new THREE.Scene();
-            scene.fog = new THREE.FogExp2(0x050505, 0.002);
+            scene.fog = new THREE.FogExp2(0x020205, 0.003);
 
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.z = 60;
+            camera.position.z = isMobile ? 80 : 60;
 
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             container.appendChild(renderer.domElement);
 
-            // 材质和纹理图集
-            textureAtlasCanvas = document.createElement('canvas');
-            textureAtlasCanvas.width = textureAtlasCanvas.height = 1024;
-            generateDefaultAtlas();
-            textureAtlasTexture = new THREE.CanvasTexture(textureAtlasCanvas);
+            // 生成增强版图集（带发光底座）
+            const atlasTexture = generateEnhancedAtlas();
             
-            // 粒子系统
             geometry = new THREE.BufferGeometry();
             const pos = new Float32Array(CONFIG.particleCount * 3);
             const sizes = new Float32Array(CONFIG.particleCount);
             const indices = new Float32Array(CONFIG.particleCount);
+            const randoms = new Float32Array(CONFIG.particleCount); // 存储每个粒子的随机属性
+
             for(let i=0; i<CONFIG.particleCount; i++) {
-                pos[i*3] = (Math.random()-0.5)*200;
-                pos[i*3+1] = (Math.random()-0.5)*200;
-                pos[i*3+2] = (Math.random()-0.5)*200;
-                sizes[i] = Math.random() * 0.5 + 0.5;
+                pos[i*3] = (Math.random()-0.5)*300;
+                pos[i*3+1] = (Math.random()-0.5)*300;
+                pos[i*3+2] = (Math.random()-0.5)*300;
+                sizes[i] = 0.5 + Math.random() * 0.5;
                 indices[i] = Math.floor(Math.random() * 16);
+                randoms[i] = Math.random();
             }
+
             geometry.setAttribute('position', new THREE.BufferAttribute(pos, 3));
             geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
             geometry.setAttribute('imgIndex', new THREE.BufferAttribute(indices, 1));
+            geometry.setAttribute('aRandom', new THREE.BufferAttribute(randoms, 1));
 
             material = new THREE.ShaderMaterial({
                 uniforms: {
                     uTime: { value: 0 },
-                    uColor: { value: new THREE.Color('#ffffff') },
-                    uTexture: { value: textureAtlasTexture },
+                    uColor: { value: new THREE.Color(CONFIG.baseColor) },
+                    uTexture: { value: atlasTexture },
                     uAtlasGrid: { value: CONFIG.atlasGrid },
                     uExpansion: { value: 0 },
                     uAudioLevel: { value: 0 },
@@ -239,30 +217,49 @@
                 vertexShader: `
                     uniform float uTime; uniform float uExpansion; uniform float uAudioLevel;
                     uniform float uSize; uniform float uPixelRatio;
-                    attribute float size; attribute float imgIndex;
-                    varying float vImgIndex; varying float vOpacity;
+                    attribute float size; attribute float imgIndex; attribute float aRandom;
+                    varying float vImgIndex; varying float vOpacity; varying float vBrightness;
+
                     void main() {
                         vImgIndex = imgIndex;
                         vec3 pos = position;
+                        
+                        // 1. 基础位移和扩展
                         vec3 dir = normalize(pos);
-                        pos += dir * uExpansion * 15.0;
-                        pos += dir * sin(length(pos)*0.2 - uTime*3.0) * uAudioLevel * 10.0;
+                        pos += dir * uExpansion * (20.0 + aRandom * 15.0);
+                        
+                        // 2. 呼吸感：粒子大小和位置随时间微调
+                        float pulse = sin(uTime * (1.5 + aRandom) + aRandom * 10.0);
+                        pos += dir * pulse * 0.5;
+                        
+                        // 3. 音频互动
+                        pos += dir * sin(length(pos)*0.1 - uTime*4.0) * uAudioLevel * 25.0;
+
                         vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
                         gl_Position = projectionMatrix * mvPosition;
-                        gl_PointSize = uSize * size * uPixelRatio * (60.0 / -mvPosition.z);
-                        vOpacity = smoothstep(120.0, 20.0, -mvPosition.z);
+                        
+                        // 粒子随距离衰减，但在手机端保持更大的最小尺寸
+                        float pSize = uSize * size * (1.0 + pulse * 0.2);
+                        gl_PointSize = pSize * uPixelRatio * (80.0 / -mvPosition.z);
+                        
+                        vOpacity = smoothstep(150.0, 10.0, -mvPosition.z);
+                        vBrightness = 0.8 + 0.4 * pulse; // 随时间闪烁
                     }
                 `,
                 fragmentShader: `
                     uniform vec3 uColor; uniform sampler2D uTexture; uniform float uAtlasGrid;
-                    varying float vImgIndex; varying float vOpacity;
+                    varying float vImgIndex; varying float vOpacity; varying float vBrightness;
                     void main() {
                         float col = mod(vImgIndex, uAtlasGrid);
                         float row = floor(vImgIndex / uAtlasGrid);
                         vec2 uv = (gl_PointCoord + vec2(col, row)) / uAtlasGrid;
                         vec4 tex = texture2D(uTexture, vec2(uv.x, 1.0 - uv.y));
-                        if(tex.a < 0.3) discard;
-                        gl_FragColor = vec4(tex.rgb * uColor, tex.a * vOpacity);
+                        
+                        if(tex.a < 0.1) discard;
+                        
+                        // 颜色混合：基础色 + 亮度抖动
+                        vec3 finalColor = tex.rgb * uColor * vBrightness;
+                        gl_FragColor = vec4(finalColor, tex.a * vOpacity);
                     }
                 `,
                 transparent: true, depthWrite: false, blending: THREE.AdditiveBlending
@@ -275,49 +272,96 @@
             controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
             controls.autoRotate = true;
-            controls.autoRotateSpeed = 0.5;
+            controls.autoRotateSpeed = 0.6;
+            controls.enableZoom = false; // 手机端禁用缩放防止干扰手势
 
             window.addEventListener('resize', onWindowResize);
+            container.addEventListener('click', () => toggleCleanMode());
+
             animate();
             setShape('heart');
-            setTimeout(() => document.getElementById('loader').style.opacity = 0, 1000);
+            setTimeout(() => document.getElementById('loader').style.opacity = 0, 1500);
         }
 
-        // 生成默认图标
-        function generateDefaultAtlas() {
-            const ctx = textureAtlasCanvas.getContext('2d');
-            ctx.clearRect(0,0,1024,1024);
-            const s = 1024/4;
-            const icons = ["❤️","🌹","⭐","🌙","🦋","💍","❄️","🧬","🌌","🎄","💎","👑","🎵","💋","🎆","🌸"];
-            ctx.font = `${s*0.7}px serif`; ctx.textAlign="center"; ctx.textBaseline="middle";
-            ctx.fillStyle = "white";
+        // 生成增强版纹理：带柔和径向发光的图标
+        function generateEnhancedAtlas() {
+            const canvas = document.createElement('canvas');
+            canvas.width = canvas.height = 1024;
+            const ctx = canvas.getContext('2d');
+            const s = 1024 / 4;
+            const icons = ["❤️","✨","⭐","🌙","🦋","💍","❄️","🧬","🌌","🎄","💎","👑","🎵","💋","🎆","🌸"];
+            
+            ctx.clearRect(0, 0, 1024, 1024);
+            
             icons.forEach((icon, i) => {
-                ctx.fillText(icon, (i%4)*s + s/2, Math.floor(i/4)*s + s/2);
+                const x = (i % 4) * s + s/2;
+                const y = Math.floor(i / 4) * s + s/2;
+                
+                // 1. 绘制径向发光底座
+                const grad = ctx.createRadialGradient(x, y, 0, x, y, s/2.5);
+                grad.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+                grad.addColorStop(0.3, 'rgba(255, 255, 255, 0.2)');
+                grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(x, y, s/2, 0, Math.PI*2);
+                ctx.fill();
+                
+                // 2. 绘制图标主体
+                ctx.font = `${s * 0.5}px serif`;
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillStyle = "white";
+                ctx.fillText(icon, x, y + 2);
             });
+            
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.magFilter = THREE.LinearFilter;
+            tex.minFilter = THREE.LinearMipmapLinearFilter;
+            return tex;
         }
 
-        // --- 核心逻辑 ---
+        // --- 形状计算优化：适配手机屏幕比例 ---
         function setShape(type) {
             const pos = new Float32Array(CONFIG.particleCount * 3);
+            const aspect = window.innerWidth / window.innerHeight;
+            // 如果是手机竖屏(aspect < 1)，形状需要拉长一些，否则太扁
+            const mobileScaleY = aspect < 0.8 ? 1.3 : 1.0; 
+
             for(let i=0; i<CONFIG.particleCount; i++) {
                 const t = Math.random() * Math.PI * 2;
-                const v = Math.random();
+                const v = Math.pow(Math.random(), 0.6); // 让粒子更倾向于分布在边缘
                 let x=0, y=0, z=0;
+
                 if(type === 'heart') {
                     x = 16 * Math.pow(Math.sin(t), 3);
                     y = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
-                    x *= v; y *= v; z = (Math.random()-0.5)*5*v;
+                    x *= v * 1.2; 
+                    y *= v * 1.2 * mobileScaleY;
+                    z = (Math.random()-0.5) * 10 * v;
                 } else if(type === 'star') {
-                    const r = (i%2==0 ? 15 : 7) * v;
-                    x = r * Math.cos(t); y = r * Math.sin(t); z = (Math.random()-0.5)*5;
+                    const r = (i%2==0 ? 18 : 8) * v;
+                    x = r * Math.cos(t); 
+                    y = r * Math.sin(t) * mobileScaleY;
+                    z = (Math.random()-0.5)*8;
+                } else if(type === 'galaxy') {
+                    const r = 5 + 25 * v;
+                    const spin = r * 0.5 + (i%2) * Math.PI;
+                    x = r * Math.cos(spin);
+                    y = r * Math.sin(spin) * 0.5;
+                    z = (Math.random()-0.5)*15 * (1-v);
                 } else {
-                    const r = 15 * Math.pow(Math.random(), 0.3);
+                    const r = 20 * Math.pow(Math.random(), 0.5);
                     const p = Math.acos(2*Math.random()-1);
-                    x = r*Math.sin(p)*Math.cos(t); y = r*Math.sin(p)*Math.sin(t); z = r*Math.cos(p);
+                    x = r*Math.sin(p)*Math.cos(t); 
+                    y = r*Math.sin(p)*Math.sin(t) * mobileScaleY; 
+                    z = r*Math.cos(p);
                 }
                 pos[i*3]=x; pos[i*3+1]=y; pos[i*3+2]=z;
             }
             targetPositions = pos;
+            showToast(`形态已切换 ✨`);
         }
 
         function animate() {
@@ -326,34 +370,36 @@
             material.uniforms.uTime.value = time;
             controls.update();
             
-            // 缓动粒子位置
             const currentPos = particles.geometry.attributes.position.array;
             for(let i=0; i<currentPos.length; i++) {
-                currentPos[i] += (targetPositions[i] - currentPos[i]) * 0.05;
+                currentPos[i] += (targetPositions[i] - currentPos[i]) * 0.06;
             }
             particles.geometry.attributes.position.needsUpdate = true;
 
-            // 扩展系数平滑
-            handExpansion += (targetHandExpansion - handExpansion) * 0.1;
+            handExpansion += (targetHandExpansion - handExpansion) * 0.12;
             material.uniforms.uExpansion.value = handExpansion;
 
-            // 音频处理
             if(isAudioActive && analyser) {
                 analyser.getByteFrequencyData(dataArray);
                 let sum = 0; dataArray.forEach(v => sum += v);
                 material.uniforms.uAudioLevel.value = sum / (dataArray.length * 255);
             }
-
             renderer.render(scene, camera);
+        }
+
+        // --- 工具功能 ---
+        function toggleCleanMode() {
+            isCleanMode = !isCleanMode;
+            document.getElementById('ui-layer').classList.toggle('ui-hidden', isCleanMode);
         }
 
         function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+            material.uniforms.uPixelRatio.value = Math.min(window.devicePixelRatio, 2);
         }
 
-        // --- 交互功能 ---
         function toggleFullScreen() {
             if (!document.fullscreenElement) document.documentElement.requestFullscreen();
             else document.exitFullscreen();
@@ -365,15 +411,6 @@
             setTimeout(() => t.style.opacity = 0, 2000);
         }
 
-        function takeSnapshot() {
-            renderer.render(scene, camera);
-            const link = document.createElement('a');
-            link.download = 'particles.png';
-            link.href = renderer.domElement.toDataURL();
-            link.click();
-            showToast("截图已保存");
-        }
-
         async function toggleAudio() {
             if(!isAudioActive) {
                 try {
@@ -383,44 +420,38 @@
                     audioContext.createMediaStreamSource(stream).connect(analyser);
                     dataArray = new Uint8Array(analyser.frequencyBinCount);
                     isAudioActive = true;
-                    document.getElementById('audioBtn').innerText = "🔊 律动中";
-                    showToast("音乐同步已开启");
-                } catch(e) { showToast("无法开启麦克风"); }
-            } else {
-                isAudioActive = false;
-                document.getElementById('audioBtn').innerText = "🎵 律动";
-            }
+                    showToast("音乐律动已开启 🎵");
+                } catch(e) { showToast("需要麦克风权限"); }
+            } else { isAudioActive = false; }
         }
 
-        // 手势追踪
         function setupMediaPipe() {
             const hands = new Hands({locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`});
             hands.setOptions({maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.5});
             hands.onResults(res => {
                 const indicator = document.getElementById('hand-indicator');
-                const status = document.getElementById('hand-status');
                 if(res.multiHandLandmarks && res.multiHandLandmarks.length > 0) {
                     const lm = res.multiHandLandmarks[0];
                     const d = Math.sqrt(Math.pow(lm[4].x-lm[8].x,2)+Math.pow(lm[4].y-lm[8].y,2));
-                    targetHandExpansion = Math.max(0, (d-0.05)*4);
+                    targetHandExpansion = Math.max(0, (d-0.08)*5);
                     indicator.style.backgroundColor = "#4ade80";
-                    status.innerText = "手势交互中";
                 } else {
                     targetHandExpansion = 0;
                     indicator.style.backgroundColor = "#ef4444";
-                    status.innerText = "等待手势";
                 }
             });
             const cam = new Camera(document.getElementById('input_video'), {
                 onFrame: async () => { await hands.send({image: document.getElementById('input_video')}); },
                 width: 480, height: 360
             });
-            cam.start().catch(() => console.log("Camera disabled"));
+            cam.start().catch(() => console.log("Camera off"));
         }
 
-        document.getElementById('colorPicker').oninput = (e) => material.uniforms.uColor.value.set(e.target.value);
-        
-        // 初始化
+        document.getElementById('colorPicker').oninput = (e) => {
+            material.uniforms.uColor.value.set(e.target.value);
+            CONFIG.baseColor = e.target.value;
+        };
+
         window.onload = init;
     </script>
 </body>
